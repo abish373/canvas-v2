@@ -11,12 +11,11 @@ canvas.width = width;
 canvas.height = height;
 
 const ctx = canvas.getContext("2d");
-ctx.fillRect(0, 0, width, height);
 
 //create an array of 10 element, height should be less than half of the screen height
 const array = (() => {
   const arr = [];
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 10; i++) {
     arr.push(generateRandomNumber(50, height - 50));
   }
   return arr;
@@ -36,8 +35,9 @@ const drawedItemsPath = [];
 
 array.forEach((element, i) => {
   const clr = ["green", "yellow", "blue", "lightblue", "orange"];
-  ctx.fillStyle = clr[i];
-  const xWhereToStart = 50 * i; //need to
+  const color = clr[generateRandomNumber(0, 4)];
+  ctx.fillStyle = color;
+  const xWhereToStart = 50 * i;
 
   const yWhereToStart = height - 50 - element;
   const yWhereToEnd = element;
@@ -45,7 +45,7 @@ array.forEach((element, i) => {
   ctx.fillRect(xWhereToStart, yWhereToStart, 20, yWhereToEnd);
   ctx.closePath();
   drawedItemsPath.push({
-    color: clr[i],
+    color,
     yWhereToEnd,
     xWhereToStart,
     yWhereToStart,
@@ -59,25 +59,35 @@ array.forEach((element, i) => {
 const sortedDrawItems = drawedItemsPath.sort((a, b) => b.element - a.element);
 
 renderSort();
-function pick(x) {
+function pick(x, idx) {
   return new Promise((res) => {
     setTimeout(() => {
-      replaceItem(x);
+      replaceItem(x, idx);
       res(x);
     }, 1000);
   });
 }
 
-function replaceItem(data) {
+function replaceItem(data, idx) {
   ctx.beginPath();
-  // ctx.fillStyle = "white";
-  const { xWhereToStart, yWhereToStart, yWhereToEnd } = data;
+  ctx.fillStyle = "white";
+  const { xWhereToStart, yWhereToStart, yWhereToEnd, color, i } = data;
   ctx.clearRect(xWhereToStart, yWhereToStart, 20, yWhereToEnd);
   ctx.fillRect(xWhereToStart, yWhereToStart, 20, yWhereToEnd);
+  ctx.closePath();
+
+  //draw circle in end
+  ctx.beginPath();
+  ctx.fillStyle = color || "black";
+  let x = idx * 20 + 20 + 20;
+  const xNewStart = width - x;
+  console.log(idx, color, xNewStart, 20, yWhereToStart, yWhereToEnd);
+  ctx.fillRect(xNewStart, yWhereToStart, 20, yWhereToEnd);
+  ctx.closePath();
 }
 
 async function renderSort() {
-  for (let x of sortedDrawItems) {
-    await pick(x);
+  for (let i = 0; i < sortedDrawItems.length; i++) {
+    await pick(sortedDrawItems[i], i);
   }
 }
